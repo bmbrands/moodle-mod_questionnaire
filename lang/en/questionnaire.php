@@ -124,6 +124,8 @@ $string['kindofratescale'] = 'Type of rate scale';
 $string['kindofratescale_help'] = 'See the Moodle Documentation below';
 $string['kindofratescale_link'] = 'mod/questionnaire/questions#Type_of_rate_scale';
 $string['length'] = 'Length';
+$string['lockanonymous'] = 'Lock anonymous child questionnaires';
+$string['lockanonymous_desc'] = 'This setting prevents changes in the module settings for anonymous questionnaires';
 $string['maxdigitsallowed'] = 'Max. digits allowed';
 $string['maxdigitsallowed_help'] = 'By using the Max. digits allowed and Nb of decimal digits parameters you can specify
  the length and number of decimal places required.';

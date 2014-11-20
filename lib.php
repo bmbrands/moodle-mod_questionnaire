@@ -111,6 +111,7 @@ function questionnaire_add_instance($questionnaire) {
     }
     $questionnaire->navigate = 1; // not used at all!
 
+
     if(!$questionnaire->id = $DB->insert_record("questionnaire", $questionnaire)) {
         return false;
     }
@@ -155,7 +156,7 @@ function questionnaire_update_instance($questionnaire) {
 
     questionnaire_set_events($questionnaire);
     // JR removed line because triggers error in moodle 2.3 STRICT STANDARDS mode ???
-	//questionnaire_update_grades($questionnaire);
+  //questionnaire_update_grades($questionnaire);
     return $DB->update_record("questionnaire", $questionnaire);
 }
 

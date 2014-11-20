@@ -47,12 +47,19 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         //-------------------------------------------------------------------------------
         $mform->addElement('header', 'timinghdr', get_string('timing', 'form'));
 
+        $mform->addElement('hidden', 'cannotchangerespondenttype');
+        $mform->setType('cannotchangerespondenttype', PARAM_INT);
+
+        $mform->addElement('hidden', 'lockedanonymouschild');
+        $mform->setType('lockedanonymouschild', PARAM_INT);
+
         $enableopengroup = array();
         $enableopengroup[] =& $mform->createElement('checkbox', 'useopendate', get_string('opendate', 'questionnaire'));
         $enableopengroup[] =& $mform->createElement('date_time_selector', 'opendate', '');
         $mform->addGroup($enableopengroup, 'enableopengroup', get_string('opendate', 'questionnaire'), ' ', false);
         $mform->addHelpButton('enableopengroup', 'opendate', 'questionnaire');
         $mform->disabledIf('enableopengroup', 'useopendate', 'notchecked');
+        $mform->disabledIf('enableopengroup', 'lockedanonymouschild', 'eq', 1);
 
         $enableclosegroup = array();
         $enableclosegroup[] =& $mform->createElement('checkbox', 'useclosedate', get_string('closedate', 'questionnaire'));
@@ -60,6 +67,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addGroup($enableclosegroup, 'enableclosegroup', get_string('closedate', 'questionnaire'), ' ', false);
         $mform->addHelpButton('enableclosegroup', 'closedate', 'questionnaire');
         $mform->disabledIf('enableclosegroup', 'useclosedate', 'notchecked');
+        $mform->disabledIf('enableclosegroup', 'lockedanonymouschild', 'eq', 1);
 
         //-------------------------------------------------------------------------------
         global $QUESTIONNAIRE_TYPES, $QUESTIONNAIRE_RESPONDENTS, $QUESTIONNAIRE_ELIGIBLES,
@@ -68,9 +76,8 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $QUESTIONNAIRE_TYPES);
         $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
+        $mform->disabledIf('qtype', 'lockedanonymouschild', 'eq', 1);
 
-        $mform->addElement('hidden', 'cannotchangerespondenttype');
-        $mform->setType('cannotchangerespondenttype', PARAM_INT);
         $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $QUESTIONNAIRE_RESPONDENTS);
         $mform->addHelpButton('respondenttype', 'respondenttype', 'questionnaire');
         $mform->disabledIf('respondenttype', 'cannotchangerespondenttype', 'eq', 1);
@@ -81,13 +88,16 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $QUESTIONNAIRE_RESPONSEVIEWERS);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
+        $mform->disabledIf('resp_view', 'lockedanonymouschild', 'eq', 1);
 
         $options = array('0'=>get_string('no'),'1'=>get_string('yes'));
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
+        $mform->disabledIf('resume', 'lockedanonymouschild', 'eq', 1);
 
         $mform->addElement('modgrade', 'grade', get_string('grade', 'questionnaire'), false);
         $mform->setDefault('grade', 0);
+        $mform->disabledIf('grade', 'lockedanonymouschild', 'eq', 1);
 
         //-------------------------------------------------------------------------------
         if (empty($questionnaire->sid)) {
@@ -138,11 +148,15 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $this->standard_coursemodule_elements();
         //-------------------------------------------------------------------------------
         // buttons
+
         $this->add_action_buttons();
+        $mform->disabledIf('submitbutton', 'lockedanonymouschild', 'eq', 1);
+        $mform->disabledIf('submitbutton2', 'lockedanonymouschild', 'eq', 1);
+
     }
 
     function data_preprocessing(&$default_values){
-        global $DB;
+        global $DB, $COURSE;
         if (empty($default_values['opendate'])) {
             $default_values['useopendate'] = 0;
         } else {
@@ -160,6 +174,23 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             $numresp = $DB->count_records('questionnaire_response', array('survey_id' => $default_values['sid'],'complete' => 'y'));
             if ($numresp) {
                 $default_values['cannotchangerespondenttype'] = 1;
+            }
+        }
+
+        if ($questionnaire = $DB->get_record('questionnaire', array('id' => $this->_instance))) {
+            if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
+                $ischild = true;
+                if ($survey->owner == $COURSE->id) {
+                    $ischild = false;
+                }
+                $cfg_questionnaire = get_config('questionnaire');
+                $default_values['lockedanonymouschild'] = 0;
+                if (!empty($cfg_questionnaire->lockanonymous) && ($cfg_questionnaire->lockanonymous == 1) && $ischild) {
+                    $default_values['lockedanonymouschild'] = 1;
+                    $default_values['cannotchangerespondenttype'] = 1;
+                    $default_values['useopendate'] = 1;
+                    $default_values['useclosedate'] = 1;
+                }
             }
         }
     }

@@ -229,9 +229,10 @@ class questionnaire {
                     $questionnaire->courseid = $this->course->id;
                     questionnaire_update_grades($questionnaire, $quser);
                 }
-
-                add_to_log($this->course->id, "questionnaire", "submit", "view.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
-
+                // Add bmbrands: prevent logging of anonymous questionnaires.
+                if ($this->respondenttype != 'anonymous') {
+                    add_to_log($this->course->id, "questionnaire", "submit", "view.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
+                }
                 $this->response_send_email($this->rid);
                 $this->response_goto_thankyou();
             }
@@ -516,8 +517,8 @@ class questionnaire {
             $formdata = data_submitted();
         }
         $formdata->rid = $this->get_response($quser);
-        // if student saved a "resume" questionnaire OR left a questionnaire unfinished 
-        // and there are more pages than one find the page of the last answered question 
+        // if student saved a "resume" questionnaire OR left a questionnaire unfinished
+        // and there are more pages than one find the page of the last answered question
         if (!empty($formdata->rid) && (empty($formdata->sec) || intval($formdata->sec) < 1)) {
             $formdata->sec = $this->response_select_max_sec($formdata->rid);
         }
@@ -960,6 +961,8 @@ class questionnaire {
         global $DB;
 
         // clear the sid, clear the creation date, change the name, and clear the status
+        // Since we're copying a data record, addslashes.
+        // 2.0 - don't need to do this now, since its handled by the $DB-> functions.
         $survey = clone($this->survey);
 
         unset($survey->id);
@@ -991,6 +994,8 @@ class questionnaire {
             unset($question->id);
             $question->survey_id = $new_sid;
             $question->position = $pos++;
+            $question->name = addslashes($question->name);
+            $question->content = addslashes($question->content);
 
             // copy question to new survey
             if (!($new_qid = $DB->insert_record('questionnaire_question', $question))) {
@@ -1000,6 +1005,8 @@ class questionnaire {
             foreach ($question->choices as $choice) {
                 unset($choice->id);
                 $choice->question_id = $new_qid;
+                $choice->content = addslashes($choice->content);
+                $choice->value = addslashes($choice->value);
                 if (!$DB->insert_record('questionnaire_quest_choice', $choice)) {
                     return(false);
                 }
@@ -1521,7 +1528,10 @@ class questionnaire {
             $DB->update_record('questionnaire_response', $record);
         }
         if ($resume) {
-            add_to_log($this->course->id, "questionnaire", "save", "view.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
+            // Add bmbrands: prevent logging of anonymous questionnaires.
+            if ($this->respondenttype != 'anonymous') {
+                add_to_log($this->course->id, "questionnaire", "save", "view.php?id={$this->cm->id}", "{$this->name}", $this->cm->id, $USER->id);
+            }
         }
 
         if (!empty($this->questionsbysec[$section])) {

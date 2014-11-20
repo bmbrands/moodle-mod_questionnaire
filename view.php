@@ -72,9 +72,10 @@
 
     $PAGE->set_url($url);
     $PAGE->set_context($context);
-
-	add_to_log($course->id, "questionnaire", "view", "view.php?id=$cm->id", "$questionnaire->name", $cm->id, $USER->id);
-
+    // Add bmbrands: prevent logging of anonymous questionnaires.
+    if ($questionnaire->respondenttype != 'anonymous') {
+        add_to_log($course->id, "questionnaire", "view", "view.php?id=$cm->id", "$questionnaire->name", $cm->id, $USER->id);
+    }
 /// Print the page header
 
     $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
@@ -83,7 +84,7 @@
 
 
     /// Mark as viewed
-	$completion=new completion_info($course);
-	$completion->set_module_viewed($cm);
+  $completion=new completion_info($course);
+  $completion->set_module_viewed($cm);
     $questionnaire->view();
 ?>
