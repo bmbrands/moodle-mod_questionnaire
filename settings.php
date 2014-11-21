@@ -22,4 +22,10 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('questionnaire_usergraph',
                                     get_string('configusergraph', 'questionnaire'),
                                     $str, 0, $options));
+
+    $name = 'questionnaire/lockanonymous';
+    $title = get_string('lockanonymous', 'questionnaire');
+    $description = get_string('lockanonymous_desc', 'questionnaire');
+    $setting = new admin_setting_configcheckbox($name, $title, $description, 0);
+    $settings->add($setting);
 }

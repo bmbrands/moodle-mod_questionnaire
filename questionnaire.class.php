@@ -213,9 +213,14 @@ class questionnaire {
                 if ($completion->is_enabled($this->cm) && $this->completionsubmit) {
                     $completion->update_state($this->cm, COMPLETION_COMPLETE);
                 }
-
-                add_to_log($this->course->id, "questionnaire", "submit", "view.php?id={$this->cm->id}", "{$this->name}",
-                    $this->cm->id, $USER->id);
+                // LTS.ie Anonymizing questionnaire. Start Hack
+                if ($this->respondenttype != 'anonymous') {
+                // LTS.ie Anonymizing questionnaire. End Hack
+                    add_to_log($this->course->id, "questionnaire", "submit", "view.php?id={$this->cm->id}", "{$this->name}",
+                        $this->cm->id, $USER->id);
+                // LTS.ie Anonymizing questionnaire. Start Hack
+                }
+                // LTS.ie Anonymizing questionnaire. End Hack
 
                 $this->response_send_email($this->rid);
                 $this->response_goto_thankyou();
@@ -1667,8 +1672,14 @@ class questionnaire {
             $DB->update_record('questionnaire_response', $record);
         }
         if ($resume) {
-            add_to_log($this->course->id, "questionnaire", "save", "view.php?id={$this->cm->id}",
-                "{$this->name}", $this->cm->id, $USER->id);
+            // LTS.ie Anonymizing questionnaire. Start Hack.
+            if ($this->respondenttype != 'anonymous') {
+            // LTS.ie Anonymizing questionnaire. End Hack.
+                add_to_log($this->course->id, "questionnaire", "save", "view.php?id={$this->cm->id}",
+                    "{$this->name}", $this->cm->id, $USER->id);
+            // LTS.ie Anonymizing questionnaire. Start Hack.
+            }
+            // LTS.ie Anonymizing questionnaire. End Hack.
         }
 
         if (!empty($this->questionsbysec[$section])) {

@@ -44,6 +44,13 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $this->add_intro_editor(false, get_string('description'));
 
         $mform->addElement('header', 'timinghdr', get_string('timing', 'form'));
+        // LTS.ie Anonymizing questionnaire. Start Hack.
+        $mform->addElement('hidden', 'cannotchangerespondenttype');
+        $mform->setType('cannotchangerespondenttype', PARAM_INT);
+
+        $mform->addElement('hidden', 'lockedanonymouschild');
+        $mform->setType('lockedanonymouschild', PARAM_INT);
+        // LTS.ie Anonymizing questionnaire. End Hack.
 
         $enableopengroup = array();
         $enableopengroup[] =& $mform->createElement('checkbox', 'useopendate', get_string('opendate', 'questionnaire'));
@@ -51,6 +58,9 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addGroup($enableopengroup, 'enableopengroup', get_string('opendate', 'questionnaire'), ' ', false);
         $mform->addHelpButton('enableopengroup', 'opendate', 'questionnaire');
         $mform->disabledIf('enableopengroup', 'useopendate', 'notchecked');
+        // LTS.ie Anonymizing questionnaire. Start Hack.
+        $mform->disabledIf('enableopengroup', 'lockedanonymouschild', 'eq', 1);
+        // LTS.ie Anonymizing questionnaire. End Hack.
 
         $enableclosegroup = array();
         $enableclosegroup[] =& $mform->createElement('checkbox', 'useclosedate', get_string('closedate', 'questionnaire'));
@@ -58,12 +68,18 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addGroup($enableclosegroup, 'enableclosegroup', get_string('closedate', 'questionnaire'), ' ', false);
         $mform->addHelpButton('enableclosegroup', 'closedate', 'questionnaire');
         $mform->disabledIf('enableclosegroup', 'useclosedate', 'notchecked');
+        // LTS.ie Anonymizing questionnaire. Start Hack.
+        $mform->disabledIf('enableclosegroup', 'lockedanonymouschild', 'eq', 1);
+        // LTS.ie Anonymizing questionnaire. End Hack.
 
         global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $questionnairerealms, $autonumbering;
         $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
 
         $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnairetypes);
         $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
+        // LTS.ie Anonymizing questionnaire. Start Hack.
+        $mform->disabledIf('qtype', 'lockedanonymouschild', 'eq', 1);
+        // LTS.ie Anonymizing questionnaire. End Hack
 
         $mform->addElement('hidden', 'cannotchangerespondenttype');
         $mform->setType('cannotchangerespondenttype', PARAM_INT);
@@ -93,6 +109,9 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             $grades[$i] = $i;
         }
         $mform->addElement('select', 'grade', get_string('grade', 'questionnaire'), $grades);
+        // LTS.ie Anonymizing questionnaire. Start Hack.
+        $mform->disabledIf('grade', 'lockedanonymouschild', 'eq', 1);
+        // LTS.ie Anonymizing questionnaire. End Hack
 
         if (empty($questionnaire->sid)) {
             if (!isset($questionnaire->id)) {
@@ -146,10 +165,18 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
         // Buttons.
         $this->add_action_buttons();
+        // LTS.ie Anonymizing questionnaire. Start Hack
+        $mform->disabledIf('submitbutton', 'lockedanonymouschild', 'eq', 1);
+        $mform->disabledIf('submitbutton2', 'lockedanonymouschild', 'eq', 1);
+        // LTS.ie Anonymizing questionnaire. End Hack
     }
 
     public function data_preprocessing(&$defaultvalues) {
         global $DB;
+        // LTS.ie Anonymizing questionnaire. Start Hack
+        global $COURSE;
+        // LTS.ie Anonymizing questionnaire. End Hack
+
         if (empty($defaultvalues['opendate'])) {
             $defaultvalues['useopendate'] = 0;
         } else {
@@ -170,6 +197,25 @@ class mod_questionnaire_mod_form extends moodleform_mod {
                 $defaultvalues['cannotchangerespondenttype'] = 1;
             }
         }
+
+        // LTS.ie Anonymizing questionnaire. Start Hack
+        if ($questionnaire = $DB->get_record('questionnaire', array('id' => $this->_instance))) {
+            if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
+                $ischild = true;
+                if ($survey->owner == $COURSE->id) {
+                    $ischild = false;
+                }
+                $cfg_questionnaire = get_config('questionnaire');
+                $default_values['lockedanonymouschild'] = 0;
+                if (!empty($cfg_questionnaire->lockanonymous) && ($cfg_questionnaire->lockanonymous == 1) && $ischild) {
+                    $defaultvalues['lockedanonymouschild'] = 1;
+                    $defaultvalues['cannotchangerespondenttype'] = 1;
+                    $defaultvalues['useopendate'] = 1;
+                    $defaultvalues['useclosedate'] = 1;
+                }
+            }
+        }
+        // LTS.ie Anonymizing questionnaire. End Hack
     }
 
     public function validation($data, $files) {

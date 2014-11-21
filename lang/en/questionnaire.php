@@ -217,6 +217,10 @@ $string['kindofratescale_help'] = 'Right-click on the More Help link below.';
 $string['kindofratescale_link'] = 'mod/questionnaire/questions#Type_of_rate_scale';
 $string['lastrespondent'] = 'Last Respondent';
 $string['length'] = 'Length';
+// LTS.ie Anonymizing questionnaire. Start Hack.
+$string['lockanonymous'] = 'Lock anonymous child questionnaires';
+$string['lockanonymous_desc'] = 'This setting prevents changes in the module settings for anonymous questionnaires';
+// LTS.ie Anonymizing questionnaire. END Hack.
 $string['managequestions'] = 'Manage questions';
 $string['managequestions_help'] = 'In the Manage questions section of the Edit Questions page, you can conduct a number of operations on a Questionnaire\'s questions.';
 $string['managequestions_link'] = 'mod/questionnaire/questions#Manage_questions';
