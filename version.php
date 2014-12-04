@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$module->version  = 2014041802;  // The current module version (Date: YYYYMMDDXX)
+$module->version  = 2014041803; // Original version number upstream questionnaire 2014041802
 $module->requires = 2013111800; // Moodle version.
 
 $module->component = 'mod_questionnaire';
