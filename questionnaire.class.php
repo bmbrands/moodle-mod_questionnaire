@@ -2763,12 +2763,13 @@ class questionnaire {
                 $department = $user->department;
             }
 
+            // Hack LTS, Bas Brands - Always show originating course.
             // Moodle:
             //  Get the course name that this questionnaire belongs to.
-            if ($survey->realm != 'public') {
-                $courseid = $this->course->id;
-                $coursename = $this->course->fullname;
-            } else {
+            // if ($survey->realm != 'public') {
+            //     $courseid = $this->course->id;
+            //     $coursename = $this->course->fullname;
+            // } else {
                 // For a public questionnaire, look for the course that used it.
                 $sql = 'SELECT q.id, q.course, c.fullname '.
                        'FROM {questionnaire} q, {questionnaire_attempts} qa, {course} c '.
@@ -2780,7 +2781,8 @@ class questionnaire {
                     $courseid = $this->course->id;
                     $coursename = $this->course->fullname;
                 }
-            }
+            //}
+            // End Hack LTS.
             // Moodle:
             //  If the username is numeric, try it as a Moodle user id.
             if (is_numeric($username)) {
