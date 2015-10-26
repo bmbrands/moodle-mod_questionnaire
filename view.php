@@ -169,13 +169,14 @@ if (isguestuser()) {
 // Needed for the event logging.
 $context = context_module::instance($questionnaire->cm->id);
 $anonymous = $questionnaire->respondenttype == 'anonymous';
-
-$event = \mod_questionnaire\event\course_module_viewed::create(array(
-                'objectid' => $questionnaire->id,
-                'anonymous' => $anonymous,
-                'context' => $context
-));
-$event->trigger();
+if (!$anonymous) {
+    $event = \mod_questionnaire\event\course_module_viewed::create(array(
+                    'objectid' => $questionnaire->id,
+                    'anonymous' => $anonymous,
+                    'context' => $context
+    ));
+    $event->trigger();
+}
 
 $usernumresp = $questionnaire->count_submissions($USER->id);
 
