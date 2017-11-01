@@ -713,11 +713,15 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
     }
     $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
     if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
-        $url = '/mod/questionnaire/show_nonrespondents.php';
-        $node = navigation_node::create(get_string('show_nonrespondents', 'questionnaire'),
-            new moodle_url($url, array('id' => $cmid)),
-            navigation_node::TYPE_SETTING, null, 'nonrespondents');
-        $questionnairenode->add_node($node, $beforekey);
+        // LTS.ie Anonymizing questionnaire. Start Hack
+        if ($questionnaire->respondenttype != 'anonymous') {
+            $url = '/mod/questionnaire/show_nonrespondents.php';
+            $node = navigation_node::create(get_string('show_nonrespondents', 'questionnaire'),
+                new moodle_url($url, array('id' => $cmid)),
+                navigation_node::TYPE_SETTING, null, 'nonrespondents');
+            $questionnairenode->add_node($node, $beforekey);
+        }
+        // LTS.ie Anonymizing questionnaire. End Hack
 
     }
 }

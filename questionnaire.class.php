@@ -263,15 +263,18 @@ class questionnaire {
                 // Log this submitted response.
                 $context = context_module::instance($this->cm->id);
                 $anonymous = $this->respondenttype == 'anonymous';
-                $params = array(
-                                'context' => $context,
-                                'courseid' => $this->course->id,
-                                'relateduserid' => $USER->id,
-                                'anonymous' => $anonymous,
-                                'other' => array('questionnaireid' => $questionnaire->id)
-                );
-                $event = \mod_questionnaire\event\attempt_submitted::create($params);
-                $event->trigger();
+                // LTS.ie Anonymizing questionnaire. Start Hack
+                if (!$anonymous) {
+                    $params = array(
+                                    'context' => $context,
+                                    'courseid' => $this->course->id,
+                                    'relateduserid' => $USER->id,
+                                    'anonymous' => $anonymous,
+                                    'other' => array('questionnaireid' => $questionnaire->id)
+                    );
+                    $event = \mod_questionnaire\event\attempt_submitted::create($params);
+                    $event->trigger();
+                }
 
                 $this->submission_notify($this->rid);
                 $this->response_goto_thankyou();
@@ -866,7 +869,7 @@ class questionnaire {
                     $coursename = $record->fullname;
                 }
                 $respinfo .= ' '.get_string('course'). ': '.$coursename;
-            }
+            } 
             $respinfo .= $groupname;
             $respinfo .= $timesubmitted;
             $this->page->add_to_page('respondentinfo', $this->renderer->respondent_info($respinfo));
@@ -1717,15 +1720,18 @@ class questionnaire {
             // Needed for the event logging.
             $context = context_module::instance($this->cm->id);
             $anonymous = $this->respondenttype == 'anonymous';
-            $params = array(
-                            'context' => $context,
-                            'courseid' => $this->course->id,
-                            'relateduserid' => $userid,
-                            'anonymous' => $anonymous,
-                            'other' => array('questionnaireid' => $this->id)
-            );
-            $event = \mod_questionnaire\event\attempt_saved::create($params);
-            $event->trigger();
+            // LTS.ie Anonymizing questionnaire. Start Hack
+            if (!$anonymous) {
+                $params = array(
+                                'context' => $context,
+                                'courseid' => $this->course->id,
+                                'relateduserid' => $userid,
+                                'anonymous' => $anonymous,
+                                'other' => array('questionnaireid' => $this->id)
+                );
+                $event = \mod_questionnaire\event\attempt_saved::create($params);
+                $event->trigger();
+            }
         }
 
         if (!empty($this->questionsbysec[$section])) {

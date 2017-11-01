@@ -62,13 +62,16 @@ $completion->set_module_viewed($cm);
 if ($resume) {
     $context = context_module::instance($questionnaire->cm->id);
     $anonymous = $questionnaire->respondenttype == 'anonymous';
-
-    $event = \mod_questionnaire\event\attempt_resumed::create(array(
-                    'objectid' => $questionnaire->id,
-                    'anonymous' => $anonymous,
-                    'context' => $context
-    ));
-    $event->trigger();
+     // LTS.ie Anonymizing questionnaire. Start Hack
+    if (!$anonymous) {
+        $event = \mod_questionnaire\event\attempt_resumed::create(array(
+                        'objectid' => $questionnaire->id,
+                        'anonymous' => $anonymous,
+                        'context' => $context
+        ));
+        $event->trigger();
+    }
+    // LTS.ie Anonymizing questionnaire. End Hack
 }
 
 // Generate the view HTML in the page.

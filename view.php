@@ -145,13 +145,16 @@ if (isguestuser()) {
 // Needed for the event logging.
 $context = context_module::instance($questionnaire->cm->id);
 $anonymous = $questionnaire->respondenttype == 'anonymous';
-
-$event = \mod_questionnaire\event\course_module_viewed::create(array(
-                'objectid' => $questionnaire->id,
-                'anonymous' => $anonymous,
-                'context' => $context
-));
-$event->trigger();
+// LTS.ie Anonymizing questionnaire. Start Hack
+if (!$anonymous) {
+    $event = \mod_questionnaire\event\course_module_viewed::create(array(
+                    'objectid' => $questionnaire->id,
+                    'anonymous' => $anonymous,
+                    'context' => $context
+    ));
+    $event->trigger();
+}
+// LTS.ie Anonymizing questionnaire. End Hack
 
 $usernumresp = $questionnaire->count_submissions($USER->id);
 
