@@ -187,6 +187,16 @@ $sort = '';
 $startpage = false;
 $pagecount = false;
 
+// LTS.ie Anonymizing questionnaire. Start Hack
+ if (!$fullname) {
+     // Finish the page.
+     echo html_writer::tag('div', get_string('disabledanonymous', 'mod_questionnaire'), array('class' => 'alert alert-info'));
+     echo $questionnaire->renderer->render($questionnaire->page);
+     echo $questionnaire->renderer->footer();
+     exit(0);
+ }
+ // LTS.ie Anonymizing questionnaire. End Hack
+
 if ($fullname) {
     // Print the main part of the page.
     // Print the users with no responses
